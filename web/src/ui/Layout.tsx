@@ -59,7 +59,7 @@ export default function Layout() {
           </span>
           <span>
             <a
-              href="https://github.com/gunksd/pharos-agentpay-skill"
+              href="https://github.com/gunksd/agentpay-escrow"
               target="_blank"
               rel="noreferrer"
             >

@@ -55,7 +55,7 @@ curl ${ORIGIN}/abi.json
 curl ${ORIGIN}/deployment.json
 
 # or take the whole folder
-git clone https://github.com/gunksd/pharos-agentpay-skill`}</pre>
+git clone https://github.com/gunksd/agentpay-escrow`}</pre>
       </section>
 
       <section className="doc-sec">
