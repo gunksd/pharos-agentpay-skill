@@ -1,6 +1,10 @@
-# AgentPay Escrow — Pharos Agent Skill
+# AgentPay Escrow
 
 **Pay-per-task escrow + on-chain reputation for AI agents, on Pharos.**
+
+<p align="center">
+  <img src="assets/agentpay.svg" alt="AgentPay Escrow — escrow and reputation flow between requester and worker agents" width="760">
+</p>
 
 Built for the [Pharos Skill-to-Agent Dual Cascade Hackathon](https://dorahacks.io/hackathon/pharos-phase1) (Phase 1: Skill).
 
@@ -28,21 +32,6 @@ CLI commands with JSON output:
    public ledger; `trust_score` (0-100) lets an agent screen counterparties
    before doing business.
 
-```mermaid
-flowchart LR
-
-    R[Requester Agent]
-    E[AgentPay Escrow<br/>Pharos Chain]
-    W[Worker Agent]
-    REP[Reputation ++<br/>Both Parties]
-
-    R -->|Post Bounty 🔒| E
-    W -->|Claim / Submit Work| E
-    E -->|Force Settle| W
-    R -->|Approve / Reject| E
-
-    E -->|Settlement| REP
-```
 ## Two ways to use it
 
 The same contract drives both surfaces:
@@ -153,4 +142,9 @@ cat demo/e2e.md     # real tx hashes for a full post→claim→submit→approve 
 
 ## License
 
-MIT
+Copyright © 2026 AgentPay Escrow. All rights reserved.
+
+This is proprietary software. No license, express or implied, is granted to
+use, copy, modify, distribute, or create derivative works of this software,
+in whole or in part, without prior written permission from the copyright
+holder. See [LICENSE](LICENSE) for the full terms.
