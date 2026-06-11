@@ -1,101 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  createWalletClient,
-  custom,
-  type Address,
-  type WalletClient,
-} from "viem";
-import { CONTRACT, escrowAbi, pharosAtlantic, publicClient, type Task } from "./chain";
-
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
-/* ---------- wallet ---------- */
-
-export function useWallet() {
-  const [address, setAddress] = useState<Address | null>(null);
-  const [chainOk, setChainOk] = useState(true);
-  const [connecting, setConnecting] = useState(false);
-  const clientRef = useRef<WalletClient | null>(null);
-
-  const refreshChain = useCallback(async () => {
-    if (!window.ethereum) return;
-    const idHex: string = await window.ethereum.request({ method: "eth_chainId" });
-    setChainOk(parseInt(idHex, 16) === pharosAtlantic.id);
-  }, []);
-
-  const connect = useCallback(async () => {
-    if (!window.ethereum) {
-      throw new Error("No wallet found. Install MetaMask or OKX Wallet, then reload.");
-    }
-    setConnecting(true);
-    try {
-      const accounts: string[] = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const client = createWalletClient({
-        chain: pharosAtlantic,
-        transport: custom(window.ethereum),
-      });
-      clientRef.current = client;
-      setAddress(accounts[0] as Address);
-      await ensureChain();
-      await refreshChain();
-    } finally {
-      setConnecting(false);
-    }
-  }, [refreshChain]);
-
-  const disconnect = useCallback(() => {
-    setAddress(null);
-    clientRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    if (!window.ethereum) return;
-    const onAccounts = (accs: string[]) =>
-      setAddress((accs[0] as Address) ?? null);
-    const onChain = () => refreshChain();
-    window.ethereum.on?.("accountsChanged", onAccounts);
-    window.ethereum.on?.("chainChanged", onChain);
-    return () => {
-      window.ethereum.removeListener?.("accountsChanged", onAccounts);
-      window.ethereum.removeListener?.("chainChanged", onChain);
-    };
-  }, [refreshChain]);
-
-  return { address, connect, disconnect, connecting, chainOk, walletClient: clientRef };
-}
-
-async function ensureChain() {
-  const hexId = `0x${pharosAtlantic.id.toString(16)}`;
-  try {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: hexId }],
-    });
-  } catch (err: any) {
-    if (err?.code === 4902 || /unrecognized|not added/i.test(String(err?.message))) {
-      await window.ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: hexId,
-            chainName: pharosAtlantic.name,
-            nativeCurrency: pharosAtlantic.nativeCurrency,
-            rpcUrls: pharosAtlantic.rpcUrls.default.http,
-            blockExplorerUrls: [pharosAtlantic.blockExplorers!.default.url],
-          },
-        ],
-      });
-    } else if (err?.code !== 4001) {
-      throw err;
-    }
-  }
-}
+import { useCallback, useEffect, useState } from "react";
+import type { Address } from "viem";
+import { useWalletClient } from "wagmi";
+import { CONTRACT, escrowAbi, publicClient, type Task } from "./chain";
 
 /* ---------- tasks ---------- */
 
@@ -154,7 +60,12 @@ export async function fetchReputation(agent: Address): Promise<Rep> {
       abi: escrowAbi,
       functionName: "getReputation",
       args: [agent],
-    }) as Promise<{ tasksPosted: number; tasksCompleted: number; tasksPaid: number; disputes: number }>,
+    }) as Promise<{
+      tasksPosted: number;
+      tasksCompleted: number;
+      tasksPaid: number;
+      disputes: number;
+    }>,
     publicClient.readContract({
       address: CONTRACT,
       abi: escrowAbi,
@@ -181,30 +92,22 @@ export type TxToast = {
 };
 
 export function useEscrowWrites(
-  address: Address | null,
+  address: Address | undefined,
   notify: (t: Omit<TxToast, "id">) => void,
   reload: () => void,
 ) {
   const [busy, setBusy] = useState<string | null>(null);
+  const { data: walletClient } = useWalletClient();
 
   const write = useCallback(
-    async (
-      label: string,
-      functionName: string,
-      args: unknown[],
-      value?: bigint,
-    ) => {
-      if (!address || !window.ethereum) {
+    async (label: string, functionName: string, args: unknown[], value?: bigint) => {
+      if (!address || !walletClient) {
         notify({ kind: "fail", text: "Connect a wallet first." });
         return;
       }
       setBusy(label);
       notify({ kind: "pending", text: `${label}: confirm in wallet…` });
       try {
-        const client = createWalletClient({
-          chain: pharosAtlantic,
-          transport: custom(window.ethereum),
-        });
         const { request } = await publicClient.simulateContract({
           account: address,
           address: CONTRACT,
@@ -213,7 +116,7 @@ export function useEscrowWrites(
           args: args as any,
           value,
         });
-        const hash = await client.writeContract(request);
+        const hash = await walletClient.writeContract(request);
         notify({ kind: "pending", text: `${label}: waiting for confirmation…`, hash });
         const receipt = await publicClient.waitForTransactionReceipt({ hash });
         if (receipt.status === "success") {
@@ -229,7 +132,7 @@ export function useEscrowWrites(
         setBusy(null);
       }
     },
-    [address, notify, reload],
+    [address, walletClient, notify, reload],
   );
 
   return { write, busy };

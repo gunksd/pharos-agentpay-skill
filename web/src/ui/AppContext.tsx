@@ -7,20 +7,15 @@ import {
   type ReactNode,
 } from "react";
 import type { Address } from "viem";
-import type { Task } from "../chain";
-import {
-  useEscrowWrites,
-  useTasks,
-  useWallet,
-  type TxToast,
-} from "../hooks";
+import { useAccount } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { pharosAtlantic, type Task } from "../chain";
+import { useEscrowWrites, useTasks, type TxToast } from "../hooks";
 
 type AppCtx = {
-  address: Address | null;
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  connecting: boolean;
+  address: Address | undefined;
   chainOk: boolean;
+  openConnect: () => void;
   tasks: Task[] | null;
   tasksError: string | null;
   reload: () => void;
@@ -33,10 +28,17 @@ type AppCtx = {
 const Ctx = createContext<AppCtx | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { address, connect, disconnect, connecting, chainOk } = useWallet();
+  const { address, chainId, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
   const { tasks, error: tasksError, reload } = useTasks();
   const [toasts, setToasts] = useState<TxToast[]>([]);
   const toastId = useRef(0);
+
+  const chainOk = !isConnected || chainId === pharosAtlantic.id;
+
+  const openConnect = useCallback(() => {
+    openConnectModal?.();
+  }, [openConnectModal]);
 
   const notify = useCallback((t: Omit<TxToast, "id">) => {
     const id = ++toastId.current;
@@ -52,10 +54,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <Ctx.Provider
       value={{
         address,
-        connect,
-        disconnect,
-        connecting,
         chainOk,
+        openConnect,
         tasks,
         tasksError,
         reload,

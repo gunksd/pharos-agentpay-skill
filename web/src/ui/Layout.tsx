@@ -1,10 +1,10 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { CONTRACT, EXPLORER, short } from "../chain";
 import { useApp } from "./AppContext";
 
 export default function Layout() {
-  const { address, connect, disconnect, connecting, chainOk, notify, toasts } =
-    useApp();
+  const { toasts } = useApp();
   const { pathname } = useLocation();
   const onHome = pathname === "/";
 
@@ -29,31 +29,12 @@ export default function Layout() {
             <NavLink to="/skill">For agents</NavLink>
           </nav>
           <div className="top-right">
-            <span className={`net ${chainOk ? "" : "net-wrong"}`}>
-              <span className="net-dot" aria-hidden="true" />
-              Atlantic
-            </span>
-            {address ? (
-              <button
-                className="btn ghost"
-                onClick={disconnect}
-                title={address}
-              >
-                {short(address)}
-              </button>
-            ) : (
-              <button
-                className="btn solid"
-                onClick={() =>
-                  connect().catch((e) =>
-                    notify({ kind: "fail", text: e.message }),
-                  )
-                }
-                disabled={connecting}
-              >
-                {connecting ? "Connecting…" : "Connect wallet"}
-              </button>
-            )}
+            <ConnectButton
+              label="Connect wallet"
+              showBalance={false}
+              accountStatus={{ smallScreen: "avatar", largeScreen: "address" }}
+              chainStatus={{ smallScreen: "icon", largeScreen: "name" }}
+            />
           </div>
         </div>
       </header>
@@ -101,11 +82,7 @@ export default function Layout() {
           <div key={t.id} className={`toast toast-${t.kind}`}>
             <span>{t.text}</span>
             {t.hash && (
-              <a
-                href={`${EXPLORER}/tx/${t.hash}`}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={`${EXPLORER}/tx/${t.hash}`} target="_blank" rel="noreferrer">
                 view tx
               </a>
             )}
