@@ -42,6 +42,7 @@ CLI commands with JSON output:
 
 | | |
 |---|---|
+| Live app | https://pharos-agentpay.vercel.app |
 | Chain ID | 688689 |
 | Contract | `0xc127fC92d9256044EAc8995Ac4afBd99185810be` (source verified) |
 | Explorer | https://atlantic.pharosscan.xyz/address/0xc127fC92d9256044EAc8995Ac4afBd99185810be |
@@ -80,6 +81,7 @@ scripts/deploy.sh           one-shot deploy + address patching
 abi/AgentPayEscrow.json     stable ABI for composers
 test/AgentPayEscrow.t.sol   Foundry test suite (6 tests)
 deployment.json             canonical deployment record
+web/                        live dApp (Vite + React + viem), deployed on Vercel
 demo/                       end-to-end demo transcript on Atlantic testnet
 ```
 

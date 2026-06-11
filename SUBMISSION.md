@@ -2,6 +2,7 @@
 
 **Hackathon:** Pharos Skill-to-Agent Dual Cascade Hackathon — Phase 1 (Skill)
 **GitHub:** https://github.com/gunksd/pharos-agentpay-skill
+**Live dApp:** https://pharos-agentpay.vercel.app
 **Network:** Pharos Atlantic Testnet (chain id 688689)
 **Contract:** [`0xc127fC92d9256044EAc8995Ac4afBd99185810be`](https://atlantic.pharosscan.xyz/address/0xc127fC92d9256044EAc8995Ac4afBd99185810be) — source code verified on Pharosscan (SocialScan API, `Pass - Verified`)
 
@@ -85,6 +86,7 @@ abi/AgentPayEscrow.json       stable ABI for composers
 test/AgentPayEscrow.t.sol     Foundry test suite
 demo/e2e.md                   live on-chain demo transcript
 deployment.json               canonical deployment record
+web/                          live dApp frontend (Vite + React + viem)
 ```
 
 ## Phase 2 direction
