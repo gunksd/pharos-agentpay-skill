@@ -1,0 +1,7 @@
+.wallet1.json
+.wallet2.json
+out/
+cache/
+lib/
+__pycache__/
+.env
